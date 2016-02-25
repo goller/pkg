@@ -18,9 +18,13 @@ func EnableEtcdDebug() {
 
 // NewEtcdStore constructs an EtcdStore using the given machine list
 func NewEtcdStore(machines []string, timeout time.Duration) (*EtcdStore, error) {
-	etcd, er := client.New(client.Config{Endpoints: machines})
-	if er != nil {
-		return nil, er
+	etcd, err := client.New(client.Config{Endpoints: machines})
+	if err != nil {
+		return nil, err
+	}
+	_, err = client.NewMembersAPI(etcd).Leader(context.Background())
+	if err != nil {
+		return nil, err
 	}
 	return &EtcdStore{new(sync.Mutex), client.NewKeysAPI(etcd), timeout}, nil
 }
